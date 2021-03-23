@@ -20,13 +20,13 @@ class complex_number:
         if self.type == "polar":
             print("Warning: You are converting a complex number in polar form to polar form")
         theta = np.arctan2(self.z[1], self.z[0])
+        # maybe write the function yourself
         r = np.sqrt(self.z[0] * self.z[0] + self.z[1] * self.z[1])
         if change:
             if self.z == [0, 0]:
                 self.type = "polar"
                 print("Warning: you are trying to convert 0 to polar form this is not well defined")
                 pass
-            # maybe write the function yourself
             self.z = [r, theta]
             self.type = "polar"
         else:
@@ -52,19 +52,57 @@ class complex_number:
     def copy(self):
         return complex_number(self.z[0], self.z[1], type=self.type)
 
+    def __eq__(self, other):
+        """"
+        **Warning**
+        due to the fact that converting between polar and standard form produces numerical error
+        the function cuts of after 14 decimal point and may return "false" statements
+        """
+        if self.type == other.type:
+            re = other.z[0] - 10 ** (-15) < self.z[0] < other.z[0] + 10 ** (-15)
+            im = other.z[1] - 10 ** (-15) < self.z[1] < other.z[1] + 10 ** (-15)
+            return re and im
+        if self.type == "polar":
+            temp = self.copy()
+            temp.convert_to_standard()
+            re = temp.z[0] - 10 ** (-15) < other.z[0] < temp.z[0] + 10 ** (-15)
+            print(re)
+            im = temp.z[1] - 10 ** (-15) < other.z[1] < temp.z[1] + 10 ** (-15)
+            return re and im
+        if other.type == "polar":
+            temp = other.copy()
+            temp.convert_to_standard()
+            re = temp.z[0] - 10 ** (-15) < self.z[0] < temp.z[0] + 10 ** (-15)
+            im = temp.z[1] - 10 ** (-15) < self.z[1] < temp.z[1] + 10 ** (-15)
+            return re and im
+
     def __add__(self, other):
         """"
         This function will add to complex parameters
         if the type of these parameters is different they will be converted to match the same
         the type returned will be of the first input
         """
-        if self.state == "standard":
-            if other.state == "standard":
-                return complex_number(self.z[0]+other.z[0], self.z[1]+other.z[1], type="standard")
-            if other.state == "polar":
+        if self.type == "standard":
+            if other.type == "standard":
+                return complex_number(self.z[0] + other.z[0], self.z[1] + other.z[1], type="standard")
+            if other.type == "polar":
                 temp = other.copy()
                 temp.convert_to_standard()
-                return complex_number(self.z[0]+temp.z[0],self.z[1]+temp.z[1], type= "standard")
+                return complex_number(self.z[0] + temp.z[0], self.z[1] + temp.z[1], type="standard")
+        if self.type == "polar":
+            if other.type == "standard":
+                temp = self.copy()
+                temp.convert_to_standard
+                temp = complex_number(self.z[0] + temp.z[0], self.z[1] + temp.z[1], type="standard")
+                return temp.convert_to_polar()
+            if other.type == "polar":
+                temp1 = self.copy()
+                temp2 = other.copy()
+                temp1.convert_to_standard()
+                temp2.convert_to_standard()
+                temp = complex_number(temp1.z[0] + temp2.z[0], temp1.z[1] + temp2.z[1], type="standard")
+                temp.convert_to_polar()
+                return temp
 
     def get_conjugate(self):
         if self.type == "standard":
@@ -101,8 +139,8 @@ class complex_number:
         """
         return str(self.z) + " in " + self.type + " form"
 
-
-test = complex_number(1, -2)
-test.convert_to_polar()
-test.convert_to_standard()
-print(test.get_conjugate())
+x = complex_number(1,2)
+y = complex_number(1,2)
+y.convert_to_polar()
+y.convert_to_standard()
+print(x == y)
