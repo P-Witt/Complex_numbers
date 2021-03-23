@@ -104,6 +104,48 @@ class complex_number:
                 temp.convert_to_polar()
                 return temp
 
+    def __mul__(self, other):
+        if self.type == other.type == "standard":
+            re = self.z[0] * other.z[0] - self.z[1] * other.z[1]
+            im = self.z[0] * other.z[1] + self.z[1] * other.z[0]
+            temp = complex_number(re, im, type="standard")
+            return temp
+        if self.type == other.type == "polar":
+            r = self.z[0]*other.z[0]
+            theta = self.z[1] + other.z[1]
+            temp = complex_number(r, theta, type= "polar")
+            return temp
+        if self.type == "standard" and other.type == "polar":
+            temp = other.convert_to_standard(change = False)
+            re = self.z[0] * temp.z[0] - self.z[1] * temp.z[1]
+            im = self.z[0] * temp.z[1] + self.z[1] * temp.z[0]
+            temp = complex_number(re, im, type="standard")
+            return temp
+        if self.type == "polar" and other.type == "standard":
+            temp = other.convert_to_polar(change = False)
+            r = self.z[0] * temp.z[0]
+            theta = self.z[1] + temp.z[1]
+            temp = complex_number(r, theta, type="polar")
+            return temp
+
+    def __abs__(self):
+        return np.sqrt(self.z[0]**2 + self.z[1]**2)
+
+    def invert(self):
+        if self.type == "standard":
+            re = self.z[0]/(abs(self)**2)
+            im = -self.z[1]/(abs(self)**2)
+            temp = complex_number(re, im, type="standard")
+            return temp
+        if self.type == "polar":
+            r = 1/self.z[0]
+            theta = -self.z[1]
+            temp = complex_number(r, theta, type="polar")
+            return temp
+
+    def __truediv__(self, other):
+        return self*(other.invert())
+
     def get_conjugate(self):
         if self.type == "standard":
             return [self.z[0], -self.z[1]]
@@ -130,17 +172,18 @@ class complex_number:
             temp.convert_to_polar()
             self.z = temp.z
 
-    def invert(self):
-        return
-
     def __repr__(self):
         """"
         print method for complex numbers
         """
-        return str(self.z) + " in " + self.type + " form"
+        if self.type == "polar":
+            return str(self.z[0]) + "*exp(" + str(self.z[1]) + "*i)"
+        if self.type == "standard":
+            return str(self.z[0]) + " + " + str(self.z[1]) + "*i"
 
-x = complex_number(1,2)
-y = complex_number(1,2)
-y.convert_to_polar()
-y.convert_to_standard()
-print(x == y)
+x = complex_number(-45, -4)
+y = complex_number(0, 1)
+print(x.convert_to_polar(change = False))
+print(abs(x))
+print(x.invert())
+print(x.invert()*x)
