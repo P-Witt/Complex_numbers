@@ -180,10 +180,3 @@ class complex_number:
             return str(self.z[0]) + "*exp(" + str(self.z[1]) + "*i)"
         if self.type == "standard":
             return str(self.z[0]) + " + " + str(self.z[1]) + "*i"
-
-x = complex_number(-45, -4)
-y = complex_number(0, 1)
-print(x.convert_to_polar(change = False))
-print(abs(x))
-print(x.invert())
-print(x.invert()*x)
