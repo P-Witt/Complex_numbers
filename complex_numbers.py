@@ -1,17 +1,17 @@
 import numpy as np
 import matplotlib.pyplot as plt
+import numba
 
-
-# currently missing equality multiplication and division
 
 class complex_number:
+
     def __init__(self, a, b, type="standard"):
         self.z = [a, b]
         self.type = type
 
     def convert_to_polar(self, change=True):
         """"
-        converts a nonzero complex number into its coordinate form
+        converts a nonzero complex number into its polar form
 
         if zero is given as an argument nothing will be changed
         if change is True values will be changed in place
@@ -78,7 +78,7 @@ class complex_number:
 
     def __add__(self, other):
         """"
-        This function will add to complex parameters
+        This function will add two complex numbers
         if the type of these parameters is different they will be converted to match the same
         the type returned will be of the first input
         """
@@ -104,73 +104,74 @@ class complex_number:
                 temp.convert_to_polar()
                 return temp
 
+    def __sub__(self, other):
+        return self + complex_number(-1, 0, "standard") * other
+
     def __mul__(self, other):
         if self.type == other.type == "standard":
             re = self.z[0] * other.z[0] - self.z[1] * other.z[1]
             im = self.z[0] * other.z[1] + self.z[1] * other.z[0]
-            temp = complex_number(re, im, type="standard")
-            return temp
+            return complex_number(re, im, type="standard")
         if self.type == other.type == "polar":
-            r = self.z[0]*other.z[0]
+            r = self.z[0] * other.z[0]
             theta = self.z[1] + other.z[1]
-            temp = complex_number(r, theta, type= "polar")
-            return temp
+            return complex_number(r, theta, type="polar")
         if self.type == "standard" and other.type == "polar":
-            temp = other.convert_to_standard(change = False)
+            temp = other.convert_to_standard(change=False)
             re = self.z[0] * temp.z[0] - self.z[1] * temp.z[1]
             im = self.z[0] * temp.z[1] + self.z[1] * temp.z[0]
-            temp = complex_number(re, im, type="standard")
-            return temp
+            return complex_number(re, im, type="standard")
         if self.type == "polar" and other.type == "standard":
-            temp = other.convert_to_polar(change = False)
+            temp = other.convert_to_polar(change=False)
             r = self.z[0] * temp.z[0]
             theta = self.z[1] + temp.z[1]
-            temp = complex_number(r, theta, type="polar")
-            return temp
+            return complex_number(r, theta, type="polar")
 
     def __abs__(self):
-        return np.sqrt(self.z[0]**2 + self.z[1]**2)
+        if self.type == "standard":
+            return np.sqrt(self.z[0] ** 2 + self.z[1] ** 2)
+        if self.type == "polar":
+            return self.z[0]
 
     def invert(self):
         if self.type == "standard":
-            re = self.z[0]/(abs(self)**2)
-            im = -self.z[1]/(abs(self)**2)
-            temp = complex_number(re, im, type="standard")
-            return temp
+            re = self.z[0] / (abs(self) ** 2)
+            im = -self.z[1] / (abs(self) ** 2)
+            return complex_number(re, im, type="standard")
         if self.type == "polar":
-            r = 1/self.z[0]
+            r = 1 / self.z[0]
             theta = -self.z[1]
-            temp = complex_number(r, theta, type="polar")
-            return temp
+            return complex_number(r, theta, type="polar")
 
     def __truediv__(self, other):
-        return self*(other.invert())
+        return self * (other.invert())
+
+    def __pow__(self, other, modulo=None):
+        if abs(self) == 0:
+            return complex_number(0,0, type=self.type)
+        if self.type != "polar":
+            temp1 = self.convert_to_polar(change=False)
+            flag = True
+            # depends if the complex number will be changed back  to standard form
+        else:
+            temp1 = self.copy()
+            flag = False
+        if other.type != "standard":
+            temp2 = other.convert_to_standard(change=False)
+        else:
+            temp2 = other.copy()
+        r = temp1.z[0]**temp2.z[0]/np.exp(temp1.z[1]*temp1.z[1])
+        theta = temp1.z[1]*temp2.z[0] + np.log(temp1.z[0])*temp2.z[1]
+        power = complex_number(r,theta, "polar")
+        if flag:
+            power.convert_to_standard()
+        return power
 
     def get_conjugate(self):
-        if self.type == "standard":
-            return [self.z[0], -self.z[1]]
-        else:
-            a = self.z[0]
-            b = self.z[1]
-            temp = complex_number(a, b, type="polar")
-            temp.convert_to_standard()
-            temp.conjugate()
-            return temp.convert_to_polar()
+        return complex_number(self.z[0], -self.z[1], self.type)
 
     def conjugate(self):
-        if self.type == "standard":
-            [self.z[0], -self.z[1]]
-        else:
-            """"
-            some what unreasonable in computation but the shortest implementation coming to mind right now
-            """
-            a = self.z[0]
-            b = self.z[1]
-            temp = complex_number(a, b, type="polar")
-            temp.convert_to_standard()
-            temp.conjugate()
-            temp.convert_to_polar()
-            self.z = temp.z
+        self.z[1] = -self.z[1]
 
     def __repr__(self):
         """"
@@ -180,3 +181,5 @@ class complex_number:
             return str(self.z[0]) + "*exp(" + str(self.z[1]) + "*i)"
         if self.type == "standard":
             return str(self.z[0]) + " + " + str(self.z[1]) + "*i"
+x = complex_number(0,1)
+print(x**x)
