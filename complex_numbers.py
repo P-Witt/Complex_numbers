@@ -156,13 +156,9 @@ class complex_number:
         else:
             temp1 = self.copy()
             flag = False
-        if other.type != "standard":
-            temp2 = other.convert_to_standard(change=False)
-        else:
-            temp2 = other.copy()
-        r = temp1.z[0]**temp2.z[0]/np.exp(temp1.z[1]*temp1.z[1])
-        theta = temp1.z[1]*temp2.z[0] + np.log(temp1.z[0])*temp2.z[1]
-        power = complex_number(r,theta, "polar")
+        r = temp1.z[0]**other
+        theta = temp1.z[1]*other
+        power = complex_number(r,theta, type="polar")
         if flag:
             power.convert_to_standard()
         return power
@@ -181,5 +177,3 @@ class complex_number:
             return str(self.z[0]) + "*exp(" + str(self.z[1]) + "*i)"
         if self.type == "standard":
             return str(self.z[0]) + " + " + str(self.z[1]) + "*i"
-x = complex_number(0,1)
-print(x**x)
